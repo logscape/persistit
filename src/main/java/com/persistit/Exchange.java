@@ -1349,7 +1349,10 @@ public class Exchange implements ReadOnlyExchange {
      */
     Exchange store(final Key key, final Value value) throws PersistitException {
         assertCorrectThread(true);
-        _persistit.checkClosed();
+
+        // NGA checkClosed kills performance
+        // _persistit.checkClosed();
+
         if (_volume.isReadOnly()) {
             throw new ReadOnlyVolumeException(_volume.toString());
         }
@@ -2079,7 +2082,8 @@ public class Exchange implements ReadOnlyExchange {
     private boolean traverse(final Direction direction, final boolean deep, final int minimumBytes,
             final int minKeyDepth, final int matchUpToIndex, final TraverseVisitor visitor) throws PersistitException {
         assertCorrectThread(true);
-        _persistit.checkClosed();
+// NGA - affects performance
+//        _persistit.checkClosed();
         final Key spareKey = _spareKey1;
         final boolean doFetch = minimumBytes > 0;
         final boolean doModify = minimumBytes >= 0;
@@ -3048,7 +3052,8 @@ public class Exchange implements ReadOnlyExchange {
      */
     public Exchange fetch(final Value value, int minimumBytes) throws PersistitException {
         assertCorrectThread(true);
-        _persistit.checkClosed();
+        // kills performance NGA
+        //_persistit.checkClosed();
 
         _key.testValidForStoreAndFetch(_volume.getPageSize());
         if (minimumBytes < 0) {
@@ -3393,7 +3398,8 @@ public class Exchange implements ReadOnlyExchange {
         Debug.$assert0.t(key1.compareTo(key2) < 0);
 
         assertCorrectThread(true);
-        _persistit.checkClosed();
+        // NGA - disable due to performance
+        //_persistit.checkClosed();
 
         if (!isDirectoryExchange()) {
             _persistit.checkSuspended();
@@ -3487,7 +3493,8 @@ public class Exchange implements ReadOnlyExchange {
 
         assert key1 != _spareKey1 && key2 != _spareKey1 && key1 != _spareKey2 && key2 != _spareKey2;
 
-        _persistit.checkClosed();
+        //_persistit.checkClosed();
+
         _persistit.checkSuspended();
 
         if (_volume.isReadOnly()) {
