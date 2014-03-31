@@ -2139,9 +2139,27 @@ public final class Value {
                 utfToAppendable((Appendable) target, _next, _end);
                 object = target;
             } else {
-                final StringBuilder sb = getStringAssemblyBuffer(_end - _next);
-                utfToAppendable(sb, _next, _end);
-                object = sb.toString();
+                // NGA
+                // Orignal Code -  affects performance
+                //                final StringBuilder sb = getStringAssemblyBuffer(_end - _next);
+                //                utfToAppendable(sb, _next, _end);
+                //                object = sb.toString();
+
+                // 14.2MB/s Better
+                //object = new String(_bytes,_next, _end-_next);
+
+                // 16MB/s  astest but involves 2 copies being made... yay
+//                byte[] copy = Arrays.copyOfRange(_bytes, _next, _end);
+//                object = new String(copy);
+
+                // 17.1MB/s - still 2 copies
+                // and will only work with ISO-8859-1 / standard ASCII files (8 bytes per char)
+                char[] cc = new char[_end - _next];
+                int pos = 0;
+                for (int p = _next; p < _end ; p++) {
+                     cc[pos++] = (char) _bytes[p];
+                }
+                object = new String(cc);
             }
             closeVariableLengthItem();
             break;
@@ -2322,7 +2340,9 @@ public final class Value {
                     final Object[] result = (Object[]) Array.newInstance(componentClass, length);
                     getValueCache().store(currentItemCount, result);
                     for (int index = 0; index < length; index++) {
-                        Array.set(result, index, get(null, null));
+                        result[index] = get(null, null);
+                        // NGA - profiling show this aint great
+                        //Array.set(result, index, get(null, null));
                     }
                     object = result;
                     break;
